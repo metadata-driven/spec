@@ -3,6 +3,9 @@
 > **Status: draft.** This document and the canonical configuration example
 > define the MDD metadata format independently of any implementation.
 
+Created by [Denis Glazkov (@denisskin)](https://github.com/denisskin).
+Licensed under [CC BY 4.0](LICENSE).
+
 The metadata document describes an application as a set of logical models,
 their attributes, queryable sets, presentation metadata, storage sources,
 indexes, and predefined data. It is an application model rather than a

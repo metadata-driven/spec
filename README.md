@@ -5,6 +5,8 @@ relationships, presentation, and data sources in a YAML document. Implementation
 can use that document to validate configurations, map models to storage,
 generate code, and build editors.
 
+Created by [Denis Glazkov (@denisskin)](https://github.com/denisskin).
+
 ## Start here
 
 - [Metadata format specification](specification.md) defines the document structure,
@@ -37,3 +39,7 @@ source for its attributes.
 
 The specification is a draft. Changes to format rules should update the
 specification and any affected examples in the same pull request.
+
+## License
+
+The specification and its examples are licensed under [CC BY 4.0](LICENSE).
