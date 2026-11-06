@@ -24,7 +24,7 @@ models:
     attrs:
       - name: login
         type: string(25)
-        index: regular
+        index: unique
 
 sources:
   - name: maindb

@@ -374,7 +374,7 @@ attrs:
   - name: login
     title: Login
     type: string(25)
-    index: regular
+    index: unique
 ```
 
 ### Attribute fields
@@ -386,7 +386,7 @@ attrs:
 | `format` | Optional type-specific input and display pattern. |
 | `unit` | Optional trailing-unit presentation. |
 | `source` | Authoritative source override. |
-| `index` | Shorthand single-attribute index type (`regular` or `fulltext`). |
+| `index` | Shorthand single-attribute index type (`regular`, `unique`, or `fulltext`). |
 | `lookup` | Query used to present selectable reference candidates. |
 | `query` | Query used to compute a `set<T>` value. |
 | `items` | Values declared by an inline `enum` or `enum[]`. |
@@ -813,18 +813,27 @@ enum item must be addressed unambiguously.
 
 ## Indexes
 
+| Type | Meaning |
+| --- | --- |
+| `regular` | General-purpose index. Default for explicit declarations. |
+| `unique` | Enforces uniqueness of the indexed values in the index's source. |
+| `fulltext` | Full-text search over scalar string attributes. |
+
+A unique index over multiple attributes enforces uniqueness of the value tuple
+across records. Individual attribute values may repeat.
+
 ### Single-attribute shorthand
 
 ```yaml
 - name: login
   type: string
-  index: regular
+  index: unique
 ```
 
-`index: regular` and `index: fulltext` each normalize to a single-attribute
-index in the attribute's effective source. Omit `index` when no shorthand
-index is needed. A matching explicit index on the same attribute, of the same
-type and in the same effective source, takes precedence.
+The `index` field normalizes to a single-attribute index of the specified type
+in the attribute's effective source. Omit `index` when no shorthand index is
+needed. A matching explicit index on the same attribute, of the same type and
+in the same effective source, takes precedence.
 
 ### Explicit indexes
 
@@ -846,16 +855,24 @@ indexes:
 | --- | --- | --- |
 | `attrs` | yes | Ordered model attribute names. |
 | `name` | no | Stable model-local index name. |
-| `type` | no | `regular` (default) or `fulltext`. |
+| `type` | no | `regular` (default), `unique`, or `fulltext`. |
 | `source` | no | Native or derived index target. |
 
-Attribute order is significant: `[latitude, longitude]` and
+A `session` model can require each `sid` to be unique within its `host`.
+
+```yaml
+indexes:
+  - type: unique
+    attrs: [host, sid]
+```
+
+Attribute order is significant. `[latitude, longitude]` and
 `[longitude, latitude]` describe different indexes.
 
 When `name` is omitted, normalization joins the ordered attribute names with
-underscores and adds `_fulltext` for a full-text index. For example, the same
-field can have a regular `login` index and a full-text `login_fulltext` index.
-Full-text indexes require scalar string attributes.
+underscores. It adds `_unique` for a unique index and `_fulltext` for a
+full-text index. For example, an index on `login` is named `login`,
+`login_unique`, or `login_fulltext`, depending on its type.
 
 Without `source`, the index is created in the common effective source of its
 attributes. An explicit different source, such as `search`, describes a derived
