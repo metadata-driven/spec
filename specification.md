@@ -8,8 +8,8 @@ their attributes, queryable sets, presentation metadata, storage sources,
 indexes, and predefined data. It is an application model rather than a
 database-only schema.
 
-The complete canonical example is
-[`examples/canonical.yaml`](examples/canonical.yaml).
+The canonical example models Game Base, a fictional multiplayer gaming
+platform with an online store. See [`examples/canonical.yaml`](examples/canonical.yaml).
 
 ## Design principles
 
@@ -29,7 +29,7 @@ The complete canonical example is
 
 ```yaml
 project:
-  name: example-app
+  name: game_base
 
 domains: []
 models: []
@@ -149,7 +149,7 @@ from(users)
 ```
 
 Neither source names nor set names become part of logical metadata paths.
-`db1.users` is a physical provider concern, and `users` is only a query name.
+The SQL table `game_base.users` belongs to the `maindb` source.
 
 ## Attribute groups
 
@@ -194,10 +194,10 @@ the model. Groups support `title`, `icon`, `description`, and `options`.
 
 ```yaml
 project:
-  name: test-app
-  title: My Test App
-  description: Comprehensive metadata configuration example
-  icon: 🧩
+  name: game_base
+  title: Game Base
+  description: Game Base sample application with multiplayer game servers and an online store
+  icon: 🕹️
 ```
 
 ## Domains
@@ -213,12 +213,16 @@ domains:
   - name: game
     title: Game
     icon: 🎮
+
+  - name: site
+    title: Website
+    icon: 🌐
 ```
 
 A model references domains by name:
 
 ```yaml
-domains: [shop, game]
+domains: [shop, game, site]
 ```
 
 The list is ordered. Every referenced domain must be declared at the document
@@ -232,11 +236,11 @@ search engine, or another storage mechanism.
 
 ```yaml
 sources:
-  - name: db1
-    title: Main database
-    description: Primary application storage
+  - name: maindb
+    title: Accounts and orders
+    description: Stores player accounts and storefront orders
     icon: 🗄️
-    conn: 'mysql:app@localhost/test_app'
+    conn: 'mysql://game_base_app@/game_base'
 
   - name: realtime
     title: Realtime storage
@@ -258,7 +262,7 @@ attributes:
 
 ```yaml
 - name: user
-  source: db1
+  source: maindb
 ```
 
 An attribute may override it:
@@ -290,9 +294,9 @@ models:
     title: '{login}'
     description: 'user#{id} @{login} ({display_name})'
     icon: '{type.icon}'
-    source: db1
+    source: maindb
 
-    domains: [shop, game]
+    domains: [shop, game, site]
 
     set: users
     set_title: Users

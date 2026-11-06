@@ -18,15 +18,15 @@ generate code, and build editors.
 models:
   - name: user
     set: users
-    source: db1
+    source: maindb
     attrs:
       - name: login
         type: string(25)
         index: regular
 
 sources:
-  - name: db1
-    conn: 'mysql:app@localhost/example'
+  - name: maindb
+    conn: 'mysql://game_base_app@/game_base'
 ```
 
 Here `user` names a model, `users` is its query root, and `user.login` is the

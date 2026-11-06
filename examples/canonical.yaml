@@ -1,10 +1,15 @@
 project:
-  name: test-app
-  title: My Test App
-  description: Comprehensive metadata configuration example
-  icon: 🧩
+  name: game_base
+  title: Game Base
+  description: Game Base sample application with multiplayer game servers and an online store
+  icon: 🕹️
 
 domains:
+  - name: site
+    title: Website
+    description: Website and player accounts
+    icon: 🌐
+
   - name: shop
     title: Shop
     description: Online store domain
@@ -20,9 +25,8 @@ models:
     title: '{login}'
     description: 'user#{id} @{login} ({display_name})'
     icon: '{type.icon}'
-    source: db1
-
-    domains: [shop, game]
+    source: maindb
+    domains: [shop, game, site]
 
     set: users
     set_title: Users
@@ -229,8 +233,7 @@ models:
     title: 'Order #{id}'
     description: '{status.title}, {amount} {currency.title}'
     icon: 📦
-    source: db1
-
+    source: maindb
     domains: [shop]
 
     set: orders
@@ -307,8 +310,7 @@ models:
     title: '{ip}'
     description: Network host
     icon: 🖥️
-    source: db2
-
+    source: gamedb
     domains: [game]
 
     set: hosts
@@ -335,17 +337,17 @@ models:
         type: bool
 
 sources:
-  - name: db1
-    title: Main database
-    description: Primary application storage
+  - name: maindb
+    title: Accounts and orders
+    description: Stores player accounts and storefront orders
     icon: 🗄️
-    conn: 'mysql:app@localhost/test_app'
+    conn: 'mysql://game_base_app@/game_base'
 
-  - name: db2
-    title: Game database
-    description: Game infrastructure storage
+  - name: gamedb
+    title: Game server registry
+    description: Stores registered multiplayer game servers
     icon: 🗄️
-    conn: 'mysql:game@localhost/game'
+    conn: 'mysql://game_base_ops@/game_base_hosts'
 
   - name: realtime
     title: Realtime storage
@@ -354,13 +356,13 @@ sources:
     conn: 'redis:localhost:6379/0'
 
   - name: files
-    title: File storage
-    description: Storage for binary attributes
+    title: Player uploads
+    description: Stores player avatars
     icon: 📁
-    conn: 'file:./var/test-app'
+    conn: 'file:./var/game-base/uploads'
 
   - name: search
-    title: Search index
-    description: Derived full-text and lookup indexes
+    title: Player search
+    description: Full-text search over player logins and display names
     icon: 🔎
-    conn: 'elasticsearch:http://localhost:9200/test-app'
+    conn: 'elasticsearch:http://localhost:9200/game-base-users'
