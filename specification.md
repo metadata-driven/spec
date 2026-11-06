@@ -11,7 +11,7 @@ their attributes, queryable sets, presentation metadata, storage sources,
 indexes, and predefined data. It is an application model rather than a
 database-only schema.
 
-The canonical example models Game Base, a fictional multiplayer gaming
+The canonical example models Mega Game, a fictional multiplayer gaming
 platform with an online store. See [`examples/canonical.yaml`](examples/canonical.yaml).
 
 ## Design principles
@@ -23,8 +23,8 @@ platform with an online store. See [`examples/canonical.yaml`](examples/canonica
 - A model describes one element. Its `set` property names the queryable
   population of those elements. A collection is a materialized attribute value.
 - Repeated objects are YAML sequences. Their declaration order is preserved.
-- An item may declare an explicit `data.id`; otherwise its one-based sequence position
-  is used as its effective ID.
+- An item may declare an explicit `id` alongside `name`. Otherwise its one-based
+  sequence position is used as its effective ID.
 - `kind` is normalized by the parser and is not normally written by an author.
 - Stable machine names and user-facing presentation expressions are separate.
 
@@ -32,7 +32,7 @@ platform with an online store. See [`examples/canonical.yaml`](examples/canonica
 
 ```yaml
 project:
-  name: game_base
+  name: mega_game
 
 domains: []
 models: []
@@ -48,7 +48,7 @@ sources: []
 
 The order of top-level mapping keys has no meaning. The order of models,
 attributes, enum values, indexes, and predefined items is preserved and
-may be used by editors and generators. For an item without an explicit `data.id`,
+may be used by editors and generators. For an item without an explicit `id`,
 this order also determines its effective ID.
 
 ## Common metadata object
@@ -152,7 +152,7 @@ from(users)
 ```
 
 Neither source names nor set names become part of logical metadata paths.
-The SQL table `game_base.users` belongs to the `maindb` source.
+The SQL table `mega_game.users` belongs to the `maindb` source.
 
 ## Attribute groups
 
@@ -197,9 +197,9 @@ the model. Groups support `title`, `icon`, `description`, and `options`.
 
 ```yaml
 project:
-  name: game_base
-  title: Game Base
-  description: Game Base sample application with multiplayer game servers and an online store
+  name: mega_game
+  title: Mega Game
+  description: Mega Game sample application with multiplayer game servers and an online store
   icon: 🕹️
 ```
 
@@ -217,7 +217,7 @@ domains:
     title: Game
     icon: 🎮
 
-  - name: site
+  - name: website
     title: Website
     icon: 🌐
 ```
@@ -225,7 +225,7 @@ domains:
 A model references domains by name:
 
 ```yaml
-domains: [shop, game, site]
+domains: [shop, game, website]
 ```
 
 The list is ordered. Every referenced domain must be declared at the document
@@ -243,7 +243,7 @@ sources:
     title: Accounts and orders
     description: Stores player accounts and storefront orders
     icon: 🗄️
-    conn: 'mysql://game_base_app@/game_base'
+    conn: 'mysql://mega_game_app@/mega_game'
 
   - name: realtime
     title: Realtime storage
@@ -299,7 +299,7 @@ models:
     icon: '{type.icon}'
     source: maindb
 
-    domains: [shop, game, site]
+    domains: [shop, game, website]
 
     set: users
     set_title: Users
@@ -612,14 +612,13 @@ This normalizes to `from(orders)`. Both complete and filtered sets have
 ## Item identity
 
 Every object declared in an `items` sequence has a required `name` and an
-effective data identifier. The `id` field is optional:
+effective identifier. An optional `id` sits alongside `name`.
 
 ```yaml
 items:
   - name: admin
+    id: 10
     title: Administrator
-    data:
-      id: 10
 
   - name: user
     title: User
@@ -627,28 +626,26 @@ items:
 
 `name` is the stable metadata and code identifier. It participates in paths
 such as `user.type.admin` and in readable assignments such as `type: admin`.
-If `data.id` is omitted, normalization assigns the item's one-based position in its
-own sequence: the first item receives `1`, the second receives `2`, and so on.
-An explicit `data.id` replaces that derived value.
+If `id` is omitted, normalization assigns the item's one-based position in its
+own sequence. The first item receives `1`, the second receives `2`, and so on.
 
 ```text
-effective_id(items[i]) = items[i].data.id ?? uint64(i + 1)
+effective_id(items[i]) = items[i].id if present, otherwise uint64(i + 1)
 ```
 
 An explicit ID does not affect the positional IDs of other items, and the
 normalizer never searches for the next unused value. It validates uniqueness
 after every effective ID has been calculated.
 
-`name` and an explicit `data.id` must be literal values, not templates. Effective
-IDs must be unique in their immediate `items` scope. This also applies when
-explicit and derived IDs are mixed; a collision is a configuration error. An
-item name must not collide with another child that would have the same
-flattened metadata path.
+`name` and an explicit `id` are literal values. An explicit `id` must be
+non-null. Effective IDs must be unique in their immediate `items` scope, even
+when explicit and derived IDs are mixed. An item name must be unique among
+children that share the same flattened metadata scope.
 
 Changing `name` changes metadata paths and generated names. Reordering items,
 or inserting or removing an item before one with a derived ID, changes that
 item's data identity and may require a migration. Items whose order may change,
-or whose IDs have already been persisted, should therefore declare `data.id`
+or whose IDs have already been persisted, should therefore declare `id`
 explicitly.
 
 For an inline enum, the effective ID is an unsigned 64-bit integer. Different
@@ -663,7 +660,7 @@ effective ID must be unique in the model's canonical set, not merely among the
 items present in this document. The parser can detect collisions between
 declared items; a source adapter must also reject a conflicting existing row
 during bootstrap. Normalized item metadata exposes the effective ID even when
-the raw YAML omitted the `data.id` key.
+the raw YAML omitted the `id` key.
 
 ## Inline enums
 
@@ -780,21 +777,21 @@ read-only by ordinary application operations:
 ```yaml
 items:
   - name: super_admin
+    id: 1
     title: Super administrator
     description: Built-in administrator account
     icon: 👑
     data:
-      id: 1
       login: root
       active: true
       type: admin
       permissions: [manage_users, manage_orders]
 ```
 
-The metadata path is `user.super_admin`. Its explicit `data.id` is both the
-stable item ID and the value of the model identifier. The `data` object provides
-values for model attributes. Because this item has an explicit ID, its position
-may change without changing its persistent identity.
+The metadata path is `user.super_admin`. Its explicit `id` is both the stable
+item ID and the value of the model identifier. The `data` object supplies the
+remaining attribute values. The explicit ID preserves its identity when the
+item moves within the sequence.
 
 Enum values are short in an assignment because the target attribute supplies
 the enum context:
@@ -924,8 +921,7 @@ unit: '{currency.title}'
 
 items:
   - name: super_admin
-    data:
-      id: 1           # optional; fixes identity independently of item order
+    id: 1             # optional, keeps the ID stable when items are reordered
 ```
 
 Separate global enum catalogs, object-valued `set` declarations, and additional

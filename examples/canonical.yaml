@@ -1,11 +1,11 @@
 project:
-  name: game_base
-  title: Game Base
-  description: Game Base sample application with multiplayer game servers and an online store
+  name: mega_game
+  title: Mega Game
+  description: Mega Game sample application with multiplayer game servers and an online store
   icon: 🕹️
 
 domains:
-  - name: site
+  - name: website
     title: Website
     description: Website and player accounts
     icon: 🌐
@@ -26,7 +26,7 @@ models:
     description: 'user#{id} @{login} ({display_name})'
     icon: '{type.icon}'
     source: maindb
-    domains: [shop, game, site]
+    domains: [shop, game, website]
 
     set: users
     set_title: Users
@@ -102,6 +102,11 @@ models:
         type: user
         lookup: 'from(users) orderby(login)'
 
+      - name: invited_by
+        title: Invited by
+        description: The player who sent the invitation
+        type: user
+
       - name: best_friends
         title: Best friends
         type: user[]
@@ -176,8 +181,8 @@ models:
         title: Super administrator
         description: Built-in administrator account
         icon: 👑
+        id: 1
         data:
-          id: 1
           login: root
           display_name: Root
           active: true
@@ -226,7 +231,6 @@ models:
 
     indexes:
       - attrs: [user, ts]
-
       - attrs: [host, ts]
 
   - name: order
@@ -341,13 +345,13 @@ sources:
     title: Accounts and orders
     description: Stores player accounts and storefront orders
     icon: 🗄️
-    conn: 'mysql://game_base_app@/game_base'
+    conn: 'mysql://mega_game_app@/mega_game'
 
   - name: gamedb
     title: Game server registry
     description: Stores registered multiplayer game servers
     icon: 🗄️
-    conn: 'postgres://game_base_ops@localhost:5432/game_base_hosts'
+    conn: 'postgres://mega_game_ops@localhost:5432/mega_game_hosts'
 
   - name: realtime
     title: Realtime storage
@@ -359,10 +363,10 @@ sources:
     title: Player uploads
     description: Stores player avatars
     icon: 📁
-    conn: 'file:./var/game-base/uploads'
+    conn: 'file:./var/mega-game/uploads'
 
   - name: search
     title: Player search
     description: Full-text search over player logins and display names
     icon: 🔎
-    conn: 'elasticsearch:http://localhost:9200/game-base-users'
+    conn: 'elasticsearch:http://localhost:9200/mega-game-users'
