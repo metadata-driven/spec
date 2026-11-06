@@ -347,7 +347,7 @@ sources:
     title: Game server registry
     description: Stores registered multiplayer game servers
     icon: 🗄️
-    conn: 'mysql://game_base_ops@/game_base_hosts'
+    conn: 'postgres://game_base_ops@localhost:5432/game_base_hosts'
 
   - name: realtime
     title: Realtime storage
