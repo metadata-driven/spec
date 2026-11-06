@@ -1,0 +1,366 @@
+project:
+  name: test-app
+  title: My Test App
+  description: Comprehensive metadata configuration example
+  icon: 🧩
+
+domains:
+  - name: shop
+    title: Shop
+    description: Online store domain
+    icon: 🛒
+
+  - name: game
+    title: Game
+    description: Game domain
+    icon: 🎮
+
+models:
+  - name: user
+    title: '{login}'
+    description: 'user#{id} @{login} ({display_name})'
+    icon: '{type.icon}'
+    source: db1
+
+    domains: [shop, game]
+
+    set: users
+    set_title: Users
+    set_description: All application users
+    set_icon: 👥
+
+    attrs:
+      - name: created
+        title: Created at
+        type: datetime
+
+      - name: active
+        title: Active
+        type: bool
+
+      - group: general
+        title: General
+        icon: 👤
+        description: Basic user information
+        options:
+          layout: compact
+        attrs:
+          - name: login
+            title: Login
+            type: string(25)
+            index: regular
+
+          - name: display_name
+            title: Display name
+            type: string
+
+          - name: birthday
+            title: Birthday
+            type: datetime
+            format: 'dd.MM.yyyy'
+
+          - name: score
+            title: Score
+            type: int
+
+          - name: avatar
+            title: Avatar
+            type: binary
+            source: files
+
+      - group: activity
+        title: Activity
+        icon: 🟢
+        description: Current status and location
+        attrs:
+          - name: online
+            title: Online
+            type: bool
+            source: realtime
+
+          - name: last_seen
+            title: Last seen
+            type: datetime
+            source: realtime
+
+          - name: latitude
+            title: Latitude
+            type: number(9,6)
+            source: realtime
+
+          - name: longitude
+            title: Longitude
+            type: number(9,6)
+            source: realtime
+
+      - name: manager
+        title: Manager
+        type: user
+        lookup: 'from(users) orderby(login)'
+
+      - name: best_friends
+        title: Best friends
+        type: user[]
+
+      - name: tags
+        title: Tags
+        type: string[]
+
+      - name: type
+        title: User type
+        type: enum
+        index: regular
+        items:
+          - name: admin
+            title: Administrator
+            icon: 🤠
+
+          - name: user
+            title: User
+            icon: 👤
+
+          - name: guest
+            title: Guest
+            icon: 👻
+
+      - name: previous_type
+        title: Previous user type
+        type: user.type
+
+      - name: permissions
+        title: Permissions
+        type: enum[]
+        items:
+          - name: manage_users
+            title: Manage users
+
+          - name: manage_orders
+            title: Manage orders
+
+          - name: impersonate_users
+            title: Impersonate users
+
+      - name: orders
+        title: Orders
+        type: set<order>
+        query: 'from(orders) where(user={id}) orderby(ts)'
+
+      - name: recent_orders
+        title: Recent orders
+        type: set<order>
+        query: 'where(user={id}) orderby(ts)'
+
+      - name: sessions
+        title: Sessions
+        type: set<session>
+        query: 'from(sessions) where(user={id}) orderby(ts)'
+
+    indexes:
+      - attrs: [type, active]
+
+      - name: location
+        source: realtime
+        attrs: [latitude, longitude]
+
+      - name: search
+        type: fulltext
+        source: search
+        attrs: [login, display_name]
+
+    items:
+      - name: super_admin
+        title: Super administrator
+        description: Built-in administrator account
+        icon: 👑
+        data:
+          id: 1
+          login: root
+          display_name: Root
+          active: true
+          type: admin
+          permissions: [manage_users, manage_orders, impersonate_users]
+
+  - name: session
+    title: '{sid}'
+    description: User authentication session
+    icon: 🔑
+    source: realtime
+
+    set: sessions
+    set_title: Sessions
+    set_description: User authentication sessions
+    set_icon: 🔐
+
+    attrs:
+      - name: ts
+        title: Created at
+        type: datetime
+        index: regular
+
+      - name: sid
+        title: Session ID
+        type: string(64)
+        index: regular
+
+      - name: user
+        title: User
+        type: user
+        lookup: 'from(users) orderby(login)'
+
+      - name: host
+        title: Host
+        type: host
+        lookup: 'from(hosts) orderby(ip)'
+
+      - name: scopes
+        title: Scopes
+        type: string[]
+
+      - name: payload
+        title: Payload
+        type: binary
+
+    indexes:
+      - attrs: [user, ts]
+
+      - attrs: [host, ts]
+
+  - name: order
+    title: 'Order #{id}'
+    description: '{status.title}, {amount} {currency.title}'
+    icon: 📦
+    source: db1
+
+    domains: [shop]
+
+    set: orders
+    set_title: Orders
+    set_description: All customer orders
+    set_icon: 🧾
+
+    attrs:
+      - name: ts
+        title: Created at
+        type: datetime
+        index: regular
+
+      - name: user
+        title: User
+        type: user
+        lookup: 'from(users) orderby(login)'
+
+      - name: valid_for_user_type
+        title: Valid for user type
+        type: user.type
+
+      - name: status
+        title: Status
+        type: enum
+        items:
+          - name: draft
+            title: Draft
+            icon: 📝
+
+          - name: placed
+            title: Placed
+            icon: ✅
+
+          - name: cancelled
+            title: Cancelled
+            icon: ❌
+
+      - name: currency
+        title: Currency
+        type: enum
+        items:
+          - name: usd
+            title: USD
+            description: United States dollar
+            icon: '$'
+
+          - name: eur
+            title: EUR
+            description: Euro
+            icon: '€'
+
+          - name: gbp
+            title: GBP
+            description: Pound sterling
+            icon: '£'
+
+      - name: amount
+        title: 'Enter amount in {currency.title}'
+        description: 'Order amount in {currency.title}'
+        icon: '{currency.icon}'
+        unit: '{currency.title}'
+        type: number(12,2)
+        format: '#,##0.00'
+
+      - name: paid
+        title: Paid
+        type: bool
+
+    indexes:
+      - attrs: [user, ts]
+
+  - name: host
+    title: '{ip}'
+    description: Network host
+    icon: 🖥️
+    source: db2
+
+    domains: [game]
+
+    set: hosts
+    set_title: Hosts
+    set_description: Registered network hosts
+    set_icon: 🌐
+
+    attrs:
+      - name: id
+        title: Host ID
+        type: string(64)
+
+      - name: ip
+        title: IP address
+        type: string(45)
+        index: regular
+
+      - name: aliases
+        title: Aliases
+        type: string[]
+
+      - name: enabled
+        title: Enabled
+        type: bool
+
+sources:
+  - name: db1
+    title: Main database
+    description: Primary application storage
+    icon: 🗄️
+    conn: 'mysql:app@localhost/test_app'
+
+  - name: db2
+    title: Game database
+    description: Game infrastructure storage
+    icon: 🗄️
+    conn: 'mysql:game@localhost/game'
+
+  - name: realtime
+    title: Realtime storage
+    description: Authoritative storage for volatile and frequently updated data
+    icon: ⚡
+    conn: 'redis:localhost:6379/0'
+
+  - name: files
+    title: File storage
+    description: Storage for binary attributes
+    icon: 📁
+    conn: 'file:./var/test-app'
+
+  - name: search
+    title: Search index
+    description: Derived full-text and lookup indexes
+    icon: 🔎
+    conn: 'elasticsearch:http://localhost:9200/test-app'
