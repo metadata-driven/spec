@@ -14,6 +14,8 @@ model and field names, even when the implementation spans several services.
 
 Created by [Denis Glazkov (@denisskin)](https://github.com/denisskin).
 
+[Full Mega Game example (YAML)](examples/canonical.yaml)
+
 ## Start with a player
 
 Mega Game is a fictional multiplayer gaming platform with an online store. A
@@ -319,7 +321,6 @@ attrs:
 ## Reference
 
 - [Metadata format specification](specification.md)
-- [Canonical Mega Game configuration](examples/canonical.yaml)
 
 ## Status
 
