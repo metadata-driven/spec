@@ -14,7 +14,7 @@ model and field names, even when the implementation spans several services.
 
 Created by [Denis Glazkov (@denisskin)](https://github.com/denisskin).
 
-[Full Mega Game example (YAML)](examples/canonical.yaml)
+[Full example (YAML)](examples/canonical.yaml)
 
 ## Start with a player
 
@@ -93,11 +93,6 @@ models:
         title: Longitude
         type: number(9,6)
         source: realtime_db
-
-      - name: recent_orders
-        title: Recent orders
-        type: set<order>
-        query: 'from(orders) where(user={id}) orderby(ts) limit(5)'
 
 ```
 
