@@ -69,7 +69,7 @@ models:
 
           - name: avatar
             title: Avatar
-            type: binary
+            type: file
             source: files
 
       - group: activity
@@ -307,6 +307,12 @@ models:
         title: Paid
         type: bool
 
+      - name: invoice
+        title: Invoice
+        description: PDF invoice for the order
+        type: file
+        source: files
+
     indexes:
       - attrs: [user, ts]
 
@@ -360,8 +366,8 @@ sources:
     conn: 'redis:localhost:6379/0'
 
   - name: files
-    title: Player uploads
-    description: Stores player avatars
+    title: Application files
+    description: Stores player avatars and order invoices
     icon: 📁
     conn: 'file:./var/mega-game/uploads'
 

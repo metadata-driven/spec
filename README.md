@@ -81,8 +81,8 @@ models:
         title: Avatar
         description: The player's profile image
         icon: 🖼️
-        type: binary
-        source: files_db
+        type: file
+        source: files
 
       - name: latitude
         title: Latitude
@@ -99,7 +99,8 @@ models:
 `user` names the model, `users` names the set you can query, and `user.login`
 identifies the login field in the metadata. Declaring `set: users` gives the
 model an `id` field by default. The full-text index on `bio` supports profile
-search by the text of a player's introduction.
+search by the text of a player's introduction. The `avatar` field exposes the
+profile image as a stream.
 
 
 ## Present each record
@@ -254,6 +255,9 @@ sources:
 
   - name: realtime
     conn: 'redis:localhost:6379/0'
+
+  - name: files
+    conn: 'file:./var/mega-game/uploads'
 
 models:
   - name: user

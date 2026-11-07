@@ -174,7 +174,7 @@ models:
           - name: login
             type: string(25)
           - name: avatar
-            type: binary
+            type: file
 ```
 
 Groups are metadata nodes with kind `group` and a path such as
@@ -471,7 +471,7 @@ reference     = model-path | enum-path
 
 `set<enum>` is not a valid inline declaration. A queryable view of an existing
 enum uses its path, for example `set<user.type>`.
-Binary attributes are scalar: `binary[]` is not supported.
+Binary and file attributes are scalar: `binary[]` and `file[]` are not supported.
 
 ### Scalar types
 
@@ -485,7 +485,8 @@ Binary attributes are scalar: `binary[]` is not supported.
 | `datetime` | Date and time value. |
 | `string` | String with provider defaults. |
 | `string(n)` | String with an explicit maximum length. |
-| `binary` | Binary data. |
+| `binary` | Binary data represented as an in-memory byte sequence, without a declared length. |
+| `file` | Binary data accessed through a stream. |
 | `json` | JSON-compatible structured value. |
 
 JSON-path queries and indexes over JSON attributes are not currently supported.
@@ -508,6 +509,12 @@ Examples:
 
 - name: login
   type: string(25)
+
+- name: payload
+  type: binary
+
+- name: invoice
+  type: file
 ```
 
 ### Input and display formats
