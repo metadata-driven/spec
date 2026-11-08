@@ -471,7 +471,7 @@ reference     = model-path | enum-path
 
 `set<enum>` is not a valid inline declaration. A queryable view of an existing
 enum uses its path, for example `set<user.type>`.
-Binary and file attributes are scalar: `binary[]` and `file[]` are not supported.
+`bool`, `json`, and `file` attributes are scalar: `bool[]`, `json[]`, and `file[]` are not supported. Binary attributes may be collections, for example `binary[]`.
 
 ### Scalar types
 
@@ -484,12 +484,14 @@ Binary and file attributes are scalar: `binary[]` and `file[]` are not supported
 | `number(p,s)` | Exact numeric value with precision and scale. |
 | `datetime` | Date and time value. |
 | `string` | String with provider defaults. |
-| `string(n)` | String with an explicit maximum length. |
-| `binary` | Binary data represented as an in-memory byte sequence, without a declared length. |
+| `string(n)` | String with a maximum length of `n` characters; `0` means no declared length limit. |
+| `binary` | Binary data represented as an in-memory byte sequence, without a declared length limit. |
+| `binary(n)` | Binary data with a maximum length of `n` bytes; `0` means no declared length limit. |
 | `file` | Binary data accessed through a stream. |
 | `json` | JSON-compatible structured value. |
 
-JSON-path queries and indexes over JSON attributes are not currently supported.
+Attribute length limits are specified by the author. The metadata format does not
+impose a universal maximum; providers and databases may impose their own limits.
 
 Examples:
 
@@ -512,6 +514,9 @@ Examples:
 
 - name: payload
   type: binary
+
+- name: checksum
+  type: binary(32)
 
 - name: invoice
   type: file
@@ -582,10 +587,15 @@ The postfix `[]` creates a finite value stored as one logical attribute:
 
 - name: tags
   type: string[]
+
+- name: checksums
+  type: binary[]
 ```
 
 Its physical representation may be an array, JSON value, serialized blob, or a
-provider-native equivalent. It is not a queryable set.
+provider-native equivalent. When binary collections are stored as JSON, each
+byte sequence is represented as a base64 string. The length of `binary(n)[]`
+applies to each byte sequence, not to the encoded string or the number of items. It is not a queryable set.
 
 ### Set attributes
 
@@ -821,7 +831,7 @@ enum item must be addressed unambiguously.
 | --- | --- |
 | `regular` | General-purpose index. Default for explicit declarations. |
 | `unique` | Enforces uniqueness of the indexed values in the index's source. |
-| `fulltext` | Full-text search over scalar string attributes. |
+| `fulltext` | Full-text search over attributes. |
 
 A unique index over multiple attributes enforces uniqueness of the value tuple
 across records. Individual attribute values may repeat.
@@ -873,6 +883,11 @@ indexes:
 Attribute order is significant. `[latitude, longitude]` and
 `[longitude, latitude]` describe different indexes.
 
+Index declarations may refer to stored attributes of any type, including JSON
+and collections. Provider or database capabilities determine which index types
+and attribute types can be implemented; unsupported combinations are reported
+by the provider.
+
 When `name` is omitted, normalization joins the ordered attribute names with
 underscores. It adds `_unique` for a unique index and `_fulltext` for a
 full-text index. For example, an index on `login` is named `login`,
@@ -905,8 +920,8 @@ A conforming parser or compiler should:
 14. Permit `unit` only on attributes.
 15. Validate query result types.
 16. Require an explicit or unambiguously inferable query root.
-17. Validate that a provider can implement or materialize requested indexes and
-    cross-source behavior.
+17. Let the selected provider validate its ability to implement or materialize
+    requested indexes and cross-source behavior.
 
 ## Canonical syntax decisions
 
