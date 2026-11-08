@@ -604,7 +604,7 @@ applies to each byte sequence, not to the encoded string or the number of items.
 ```yaml
 - name: orders
   type: set<order>
-  query: 'from(orders) where(user={id}) orderby(ts)'
+  query: 'from(orders) where(user={id}) order(ts)'
 ```
 
 It is not stored as one attribute value. The runtime exposes query/set behavior
@@ -752,7 +752,7 @@ same lookup infrastructure for enum values and ordinary model references.
 ```yaml
 - name: manager
   type: user
-  lookup: 'from(users) orderby(login)'
+  lookup: 'from(users) order(login)'
 ```
 
 It does not compute the stored value of `manager`.
@@ -764,7 +764,7 @@ It does not compute the stored value of `manager`.
 ```yaml
 - name: orders
   type: set<order>
-  query: 'from(orders) where(user={id}) orderby(ts)'
+  query: 'from(orders) where(user={id}) order(ts)'
 ```
 
 For a model, `from(...)` names the value of its `set` property, never the model
@@ -777,7 +777,7 @@ When `set<T>` has one unambiguous canonical set, `from(...)` may be omitted:
 ```yaml
 - name: recent_orders
   type: set<order>
-  query: 'where(user={id}) orderby(ts)'
+  query: 'where(user={id}) order(ts)'
 ```
 
 This is normalized as a query against the `orders` name stored in `order.set`.

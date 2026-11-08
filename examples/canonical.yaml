@@ -100,7 +100,7 @@ models:
       - name: manager
         title: Manager
         type: user
-        lookup: 'from(users) orderby(login)'
+        lookup: 'from(users) order(login)'
 
       - name: invited_by
         title: Invited by
@@ -152,17 +152,17 @@ models:
       - name: orders
         title: Orders
         type: set<order>
-        query: 'from(orders) where(user={id}) orderby(ts)'
+        query: 'from(orders) where(user={id}) order(ts)'
 
       - name: recent_orders
         title: Recent orders
         type: set<order>
-        query: 'where(user={id}) orderby(ts)'
+        query: 'where(user={id}) order(ts)'
 
       - name: sessions
         title: Sessions
         type: set<session>
-        query: 'from(sessions) where(user={id}) orderby(ts)'
+        query: 'from(sessions) where(user={id}) order(ts)'
 
     indexes:
       - attrs: [type, active]
@@ -214,12 +214,12 @@ models:
       - name: user
         title: User
         type: user
-        lookup: 'from(users) orderby(login)'
+        lookup: 'from(users) order(login)'
 
       - name: host
         title: Host
         type: host
-        lookup: 'from(hosts) orderby(ip)'
+        lookup: 'from(hosts) order(ip)'
 
       - name: scopes
         title: Scopes
@@ -254,7 +254,7 @@ models:
       - name: user
         title: User
         type: user
-        lookup: 'from(users) orderby(login)'
+        lookup: 'from(users) order(login)'
 
       - name: valid_for_user_type
         title: Valid for user type

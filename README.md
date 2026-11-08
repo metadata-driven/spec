@@ -169,7 +169,7 @@ order. The query resolves `{id}` against the current player.
 attrs:
   - name: sessions
     type: set<session>
-    query: 'from(sessions) where(user={id}) orderby(ts)'
+    query: 'from(sessions) where(user={id}) order(ts)'
 ```
 
 ## Declare predefined records
