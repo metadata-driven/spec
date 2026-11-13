@@ -77,15 +77,27 @@ options:
 without interpreting provider-specific keys. Schema builders may copy the
 object into the corresponding `dbschema` object for consumption by a driver.
 
-`title`, `description`, and `icon` use one representation for constants and
-computed values. A string without placeholders is a literal; a string with
-`{path}` placeholders is evaluated in the object's runtime context:
+`title`, `description`, and `icon` are strings that can represent literal or
+computed values. For model element presentation, a template is evaluated in
+the context of the particular model instance it describes.
+
+Template syntax, including delimiters, expressions, variable and method names,
+and their case sensitivity, is outside this specification. These rules depend
+on the template engine chosen by an implementation. The examples below and
+elsewhere in this document use one possible syntax for illustration; they do
+not prescribe that syntax. They illustrate the Go template engine
+[xtpl](https://github.com/goldic/xtpl) configured with `{...}` delimiters; other
+template engines may be used:
 
 ```yaml
 title: '{login}'
 description: Application user
 icon: '{type.icon}'
 ```
+
+The metadata parser stores template expressions as strings without interpreting
+or validating their language. An implementation may compile templates when an
+application opens and evaluates them in the appropriate runtime context.
 
 Presentation properties are used directly; there is no parallel namespace for
 their computed variants. The object kind determines the evaluation context and
@@ -99,9 +111,9 @@ runtime, a missing `title` falls back to that definition label. Other missing
 presentation fields are empty.
 
 Each characteristic has exactly one expression. The format does not store a
-separate constant fallback beside a computed value. A future expression
-language may provide fallback operators, while UI or control metadata may
-override presentation for a particular UI.
+separate constant fallback beside a computed value. A template language may
+provide fallback operators, while UI or control metadata may override
+presentation for a particular UI.
 
 Names should use lowercase `snake_case`. Renaming a `name` changes metadata
 identity and may require a migration. Presentation fields may change without
@@ -341,8 +353,8 @@ icon: '{type.icon}'
 description: 'user#{id} @{login} ({display_name})'
 ```
 
-Template fields are resolved relative to the current element. A path may follow
-a model reference or enum item, as in `{type.icon}` and `{status.title}`.
+Templates are evaluated in the context of the current model instance. Access to
+its attributes, references, and methods depends on the template implementation.
 
 There is intentionally no second static title for the model type. Metadata
 tools can identify the type by `name`; user-facing collection presentation is
@@ -390,6 +402,14 @@ attrs:
 | `lookup` | Query used to present selectable reference candidates. |
 | `query` | Query used to compute a `set<T>` value. |
 | `items` | Values declared by an inline `enum` or `enum[]`. |
+
+### Automatic timestamps
+
+An element model may declare scalar `datetime` attributes named `created` and
+`updated`. The runtime fills an empty `created` value when the element is first
+written, before `OnNew`, and leaves an explicitly supplied value unchanged. It
+sets `updated` to the current time before `OnCommit` for every new or changed
+element. Attributes with these names and other types have no automatic behavior.
 
 ### Attribute input presentation
 
@@ -769,8 +789,9 @@ It does not compute the stored value of `manager`.
 
 For a model, `from(...)` names the value of its `set` property, never the model
 metadata path. For an enum, it may name the enum type path directly. No set
-metadata node is created. Placeholders such as `{id}` are resolved against the
-current element.
+metadata node is created. A query template in an attribute is evaluated in the
+context of the model instance that owns the attribute. The template syntax in
+the examples is illustrative.
 
 When `set<T>` has one unambiguous canonical set, `from(...)` may be omitted:
 
@@ -780,8 +801,9 @@ When `set<T>` has one unambiguous canonical set, `from(...)` may be omitted:
   query: 'where(user={id}) order(ts)'
 ```
 
-This is normalized as a query against the `orders` name stored in `order.set`.
-An explicit `from(...)` is required when the query name cannot be inferred.
+The query is kept as written in metadata. When it is executed, `orders` from
+`order.set` is the default source. An explicit `from(...)` is required when
+the query name cannot be inferred.
 
 The query grammar shown here is preliminary. Regardless of its eventual parser,
 the query result must be compatible with the declared `set<T>` type.
@@ -915,17 +937,18 @@ A conforming parser or compiler should:
 10. Resolve model and attribute source inheritance.
 11. Validate an attribute format's syntax and compatibility with its value type.
 12. Validate predefined values against model attributes and inline enums.
-13. Validate presentation-expression syntax and paths in the context defined
-    by each object kind; reject unresolved paths and expression cycles.
+13. Preserve presentation expressions as strings without interpreting or
+    validating the template language in metadata.
 14. Permit `unit` only on attributes.
-15. Validate query result types.
-16. Require an explicit or unambiguously inferable query root.
+15. Validate query result types when executing the query.
+16. Require an explicit or unambiguously inferable query root at execution.
 17. Let the selected provider validate its ability to implement or materialize
     requested indexes and cross-source behavior.
 
 ## Canonical syntax decisions
 
-The following syntax choices are intentionally canonical:
+The following metadata syntax choices are intentionally canonical. The
+template expressions shown in `title` and `unit` are illustrative only:
 
 ```yaml
 type: user[]          # not []user or user.collection

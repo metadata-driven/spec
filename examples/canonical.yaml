@@ -38,6 +38,10 @@ models:
         title: Created at
         type: datetime
 
+      - name: updated
+        title: Updated at
+        type: datetime
+
       - name: active
         title: Active
         type: bool
