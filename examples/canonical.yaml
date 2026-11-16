@@ -70,11 +70,13 @@ models:
           - name: score
             title: Score
             type: int
+            domains: game
 
           - name: avatar
             title: Avatar
             type: file
             source: files
+            domains: [game, website]
 
       - group: activity
         title: Activity
@@ -242,7 +244,7 @@ models:
     description: '{status.title}, {amount} {currency.title}'
     icon: 📦
     source: maindb
-    domains: [shop]
+    domains: shop
 
     set: orders
     set_title: Orders

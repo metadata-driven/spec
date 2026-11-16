@@ -42,7 +42,7 @@ sources: []
 | Section | Meaning |
 | --- | --- |
 | `project` | Metadata for the application or configuration document. |
-| `domains` | Optional logical classifications referenced by models. |
+| `domains` | Optional logical classifications referenced by models and attributes. |
 | `models` | Ordered model declarations; this section exists only at the document root. |
 | `sources` | Storage, search, file, API, composite, or other data backends. |
 
@@ -217,7 +217,8 @@ project:
 
 ## Domains
 
-Domains classify models without containing or namespacing them:
+Domains classify models and attributes by subject area. Their metadata paths
+are based on the model and attribute names.
 
 ```yaml
 domains:
@@ -234,14 +235,28 @@ domains:
     icon: 🌐
 ```
 
-A model references domains by name:
+A model and each of its attributes can declare domain references as a single
+name or an ordered list of names. `domains: game` is equivalent to
+`domains: [game]`.
 
 ```yaml
-domains: [shop, game, website]
+models:
+  - name: user
+    domains: [shop, game, website]
+    attrs:
+      - name: login
+        type: string
+
+      - name: score
+        type: int
+        domains: game
 ```
 
-The list is ordered. Every referenced domain must be declared at the document
-root.
+The parser resolves either form to a list of domain objects declared at the
+document root. An attribute that omits `domains` inherits the list from its
+model declaration. An explicit value replaces that default for the attribute,
+and `domains: []` gives the attribute no domain membership. In this example,
+`user.login` belongs to all three domains and `user.score` belongs to `game`.
 
 ## Sources
 
@@ -329,7 +344,7 @@ models:
 | --- | --- |
 | Common fields | Element presentation expressions evaluated in model context. |
 | `source` | Default authoritative source. |
-| `domains` | Ordered domain references. |
+| `domains` | Domain name or ordered list of names. Provides the default for attributes. |
 | `set` | Canonical queryable set name. |
 | `set_title` | Set title. |
 | `set_description` | Set description. |
@@ -398,6 +413,7 @@ attrs:
 | `format` | Optional type-specific input and display pattern. |
 | `unit` | Optional trailing-unit presentation. |
 | `source` | Authoritative source override. |
+| `domains` | Optional domain name or ordered list of names. Defaults to the model declaration's domains. |
 | `index` | Shorthand single-attribute index type (`regular`, `unique`, or `fulltext`). |
 | `lookup` | Query used to present selectable reference candidates. |
 | `query` | Query used to compute a `set<T>` value. |
@@ -934,7 +950,7 @@ A conforming parser or compiler should:
 7. Normalize `enum` and `enum[]` to model-local enum type paths.
 8. Permit enum `items` only on `enum` and `enum[]` declarations.
 9. Normalize the attribute's `index` shorthand to explicit index metadata.
-10. Resolve model and attribute source inheritance.
+10. Resolve source inheritance and each attribute's effective domains.
 11. Validate an attribute format's syntax and compatibility with its value type.
 12. Validate predefined values against model attributes and inline enums.
 13. Preserve presentation expressions as strings without interpreting or
