@@ -793,6 +793,23 @@ same lookup infrastructure for enum values and ordinary model references.
 
 It does not compute the stored value of `manager`.
 
+### Collection membership in queries
+
+`&=` checks whether a stored collection contains **all** supplied values:
+
+```text
+from(users) where(permissions &= manage_users, manage_orders)
+```
+
+This matches a user with both permissions, including a user whose collection
+contains additional permissions. A single value checks membership. An empty
+collection does not match; repeated requested values do not require repeated
+collection elements. The operator requires at least one value and a collection
+field; using it with an empty value list or a scalar field is an error. For
+reference and enum collections, values identify elements of the corresponding
+model or enum. This operator tests membership, not substring matching or equality
+of the whole collection. Query execution remains subject to provider support.
+
 ### Set query
 
 `query` computes a `set<T>` attribute:

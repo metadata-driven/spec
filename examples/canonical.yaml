@@ -106,7 +106,7 @@ models:
       - name: manager
         title: Manager
         type: user
-        lookup: 'from(users) order(login)'
+        lookup: 'from(users) where(permissions &= manage_users) order(login)'
 
       - name: invited_by
         title: Invited by
