@@ -827,10 +827,12 @@ collection. Query execution remains subject to provider support.
 ```
 
 For a model, `from(...)` names the value of its `set` property, never the model
-metadata path. For an enum, it may name the enum type path directly. No set
-metadata node is created. A query template in an attribute is evaluated in the
-context of the model instance that owns the attribute. The template syntax in
-the examples is illustrative.
+metadata path. For an enum, it may name the enum type path directly. The query
+parser treats the source name as a single token: ASCII letters, digits,
+underscores, hyphens, and dots are allowed; slashes are not. It does not split
+the name at dots. No set metadata node is created. A query template in an
+attribute is evaluated in the context of the model instance that owns the
+attribute. The template syntax in the examples is illustrative.
 
 When `set<T>` has one unambiguous canonical set, `from(...)` may be omitted:
 
