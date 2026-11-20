@@ -797,20 +797,24 @@ It does not compute the stored value of `manager`.
 
 ### Collection membership in queries
 
-`&=` checks whether a stored collection contains **all** supplied values:
+Use `&=` to require **all** supplied values or `|=` to require **at least one**:
 
 ```text
 from(users) where(permissions &= manage_users, manage_orders)
+from(users) where(permissions |= manage_users, manage_orders)
 ```
 
-This matches a user with both permissions, including a user whose collection
-contains additional permissions. A single value checks membership. An empty
-collection does not match; repeated requested values do not require repeated
-collection elements. The operator requires at least one value and a collection
-field; using it with an empty value list or a scalar field is an error. For
-reference and enum collections, values identify elements of the corresponding
-model or enum. This operator tests membership, not substring matching or equality
-of the whole collection. Query execution remains subject to provider support.
+The first query matches users with both permissions; the second matches users
+with either permission or both. Additional collection elements do not affect
+a match. A single value checks membership with either operator. Empty
+collections never match, and duplicate candidates do not affect the result.
+
+Both operators require a collection field and at least one candidate. An empty
+candidate list or a scalar field is an error. Use `=` with a list to match a
+scalar field against any listed value. For reference and enum collections,
+candidates identify elements of the corresponding model or enum. Both operators
+test element membership, not substring matching or equality of the whole
+collection. Query execution remains subject to provider support.
 
 ### Set query
 
