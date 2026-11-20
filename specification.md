@@ -6,10 +6,12 @@
 Created by [Denis Glazkov (@denisskin)](https://github.com/denisskin).
 Licensed under [CC BY 4.0](LICENSE).
 
-The metadata document describes an application as a set of logical models,
-their attributes, queryable sets, presentation metadata, storage sources,
-indexes, and predefined data. It is an application model rather than a
-database-only schema.
+Metadata-Driven Development (MDD) is an architectural approach to designing
+information systems based on metadata. The metadata describes a shared model
+of the system that serves as the basis for its subsystems and applications.
+
+The metadata document declares logical models, their attributes and queryable
+sets, presentation metadata, storage sources, indexes, and predefined data.
 
 The canonical example models Mega Game, a fictional multiplayer gaming
 platform with an online store. See [`examples/canonical.yaml`](examples/canonical.yaml).
