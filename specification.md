@@ -33,6 +33,8 @@ platform with an online store. See [`examples/canonical.yaml`](examples/canonica
 ## Document structure
 
 ```yaml
+version: 1.0
+
 project:
   name: mega_game
 
@@ -43,6 +45,7 @@ sources: []
 
 | Section | Meaning |
 | --- | --- |
+| `version` | Optional version of the metadata format. |
 | `project` | Metadata for the application or configuration document. |
 | `domains` | Optional logical classifications referenced by models and attributes. |
 | `models` | Ordered model declarations; this section exists only at the document root. |
@@ -52,6 +55,24 @@ The order of top-level mapping keys has no meaning. The order of models,
 attributes, enum values, indexes, and predefined items is preserved and
 may be used by editors and generators. For an item without an explicit `id`,
 this order also determines its effective ID.
+
+## Format version
+
+The metadata format defined here is version `1.0`. The root `version` field
+consists of two non-negative decimal integers separated by a dot (`major.minor`).
+Both `version: 1.10` and `version: "1.10"` represent the string `"1.10"`, with
+major version `1` and minor version `10`. The parser preserves the digits of the
+YAML scalar. If the field is absent, the parser uses its current format version.
+
+Parsers must check the version before interpreting metadata. A parser accepts
+any minor version of a supported major version, including a later minor version.
+It must reject a document that specifies an unsupported major version or a
+malformed version.
+
+A minor revision may add optional features that an earlier parser can safely
+ignore. An addition or change that would cause an earlier parser to build a
+different schema or change the meaning of existing metadata requires a new
+major version.
 
 ## Common metadata object
 

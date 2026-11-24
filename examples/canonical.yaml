@@ -1,3 +1,5 @@
+version: 1.0
+
 project:
   name: mega_game
   title: Mega Game
