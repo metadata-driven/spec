@@ -24,16 +24,21 @@ domains:
 
 models:
   - name: user
-    title: '{login}'
-    description: 'user#{id} @{login} ({display_name})'
-    icon: '{type.icon}'
-    source: maindb
-    domains: [shop, game, website]
+    title: Player account
+    description: A registered Mega Game player
+    icon: 👤
 
     set: users
     set_title: Users
     set_description: All application users
     set_icon: 👥
+
+    to_title: '{login}'
+    to_description: '{UID} @{login} ({display_name})'
+    to_icon: '{type.icon}'
+
+    domains: [shop, game, website]
+    source: maindb
 
     attrs:
       - name: created
@@ -198,15 +203,19 @@ models:
           permissions: [manage_users, manage_orders, impersonate_users]
 
   - name: session
-    title: '{sid}'
-    description: User authentication session
+    title: Session
     icon: 🔑
-    source: realtime
 
     set: sessions
     set_title: Sessions
     set_description: User authentication sessions
     set_icon: 🔐
+
+    to_title: '{sid}'
+    to_description: '{ts} ({host.ip})'
+    to_icon: 🔑
+
+    source: realtime
 
     attrs:
       - name: ts
@@ -242,16 +251,21 @@ models:
       - attrs: [host, ts]
 
   - name: order
-    title: 'Order #{id}'
-    description: '{status.title}, {amount} {currency.title}'
+    title: Order
+    description: A storefront purchase
     icon: 📦
-    source: maindb
-    domains: shop
 
     set: orders
     set_title: Orders
     set_description: All customer orders
     set_icon: 🧾
+
+    to_title: 'Order #{id}'
+    to_description: '{status.title}, {amount} {currency.title}'
+    to_icon: 📦
+
+    source: maindb
+    domains: shop
 
     attrs:
       - name: ts
@@ -325,16 +339,19 @@ models:
       - attrs: [user, ts]
 
   - name: host
-    title: '{ip}'
-    description: Network host
+    title: Host
     icon: 🖥️
-    source: gamedb
-    domains: [game]
 
     set: hosts
     set_title: Hosts
     set_description: Registered network hosts
     set_icon: 🌐
+
+    to_title: '{ip}'
+    to_icon: 🖥️
+
+    source: gamedb
+    domains: [game]
 
     attrs:
       - name: id

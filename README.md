@@ -105,15 +105,29 @@ profile image as a stream.
 
 ## Present each record
 
-At model level, `title`, `description`, and `icon` describe an individual
-record. Mega Game can show `Alex (@alex)` as the title and use the icon from
-Alex's role. Values in braces are resolved against the current player.
+The model's `title`, `description`, and `icon` describe the player account
+type in places such as a type selector. The `to_title`, `to_description`, and
+`to_icon` fields describe each record. Mega Game can show `Alex (@alex)` as
+the title and use the icon from Alex's role. Values in braces are resolved
+against the current player.
+
+If `to_title` is omitted or set to an empty string, the runtime selects one
+default per model. A stored scalar string `title` attribute takes priority over
+a `name` attribute of the same type. The selected template supplies the title,
+including an empty result. Models without either attribute use the instance
+UID. The Go runtime compiles `{title}`, `{name}`, or `{UID}` with the same text
+parser as an explicit `to_title`. With the default Go parser, `{UID}` produces
+a title such as `user-123`. Rendering the UID may assign an ID and write pending
+data. The title is empty if no ID is available.
 
 ```yaml
 - name: user
-  title: '{name} (@{login})'
-  description: '{role.title} · Account #{id}'
-  icon: '{role.icon}'
+  title: Player account
+  description: A registered Mega Game player
+  icon: 👤
+  to_title: '{name} (@{login})'
+  to_description: '{role.title} · Account #{id}'
+  to_icon: '{role.icon}'
 ```
 
 ## Declare enumerations
