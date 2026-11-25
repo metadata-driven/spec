@@ -97,8 +97,8 @@ models:
 ```
 
 `user` names the model, `users` names the set you can query, and `user.login`
-identifies the login field in the metadata. Declaring `set: users` gives the
-model an `id` field by default. The full-text index on `bio` supports profile
+identifies the login field in the metadata. Declaring `set: users` adds the
+model's `id` field automatically. The full-text index on `bio` supports profile
 search by the text of a player's introduction. The `avatar` field exposes the
 profile image as a stream.
 
@@ -286,9 +286,6 @@ models:
     set: hosts
     source: gamedb
     attrs:
-      - name: id
-        type: string(64)
-
       - name: ip
         type: string(45)
         index: regular

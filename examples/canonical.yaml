@@ -216,10 +216,11 @@ models:
     to_icon: 🔑
 
     source: realtime
+    domains: [shop, game, website]
 
     attrs:
       - name: ts
-        title: Created at
+        title: Updated at
         type: datetime
         index: regular
 
@@ -351,21 +352,13 @@ models:
     to_icon: 🖥️
 
     source: gamedb
-    domains: [game]
+    domains: [shop, game, website]
 
     attrs:
-      - name: id
-        title: Host ID
-        type: string(64)
-
       - name: ip
         title: IP address
         type: string(45)
         index: regular
-
-      - name: aliases
-        title: Aliases
-        type: string[]
 
       - name: enabled
         title: Enabled

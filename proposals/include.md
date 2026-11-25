@@ -116,7 +116,7 @@ value. Compare `options` as a single value, with mapping key order ignored.
 | --- | --- |
 | Domain | Combine declarations of the same domain. For example, a later file may supply its `icon`. Conflicting presentation fields are errors. |
 | Source | Combine declarations of the same source. For example, one file may specify `conn` and another its `title`. Different values for `conn` are a conflict. |
-| Model properties | Apply the same agreement rule to `set`, `source`, `cache`, `cache_ttl`, `title`, `description`, `icon`, `set_*`, and other properties without a specific merge rule. |
+| Model properties | Apply the same agreement rule to `set`, `source`, `title`, `description`, `icon`, `set_*`, and other properties without a specific merge rule. |
 | Model `domains` | Normalize a single name to a one-element list and validate each list. Combine lists in declaration order and keep the first occurrence of each domain across fragments. |
 | Model `attrs` | Append new attributes in declaration order. Each attribute is declared in full in one fragment. Its name must be unique across the model, including grouped and ungrouped attributes. An inline enum and its `items` belong to its attribute's declaration. |
 | Attribute groups | Merge groups with the same `group` in a model. Keep the group's first position and append its new members in declaration order. The agreement rule applies to group properties such as `title`, `description`, and `icon`. Flatten the completed `attrs` list in order, expanding each group at its position. Attribute paths stay model-relative, for example `user.billing_email`. |
@@ -136,7 +136,7 @@ The merged model's domain list comes from its model fragments.
 
 Resolve **source inheritance after merging**. An attribute uses its explicit
 `source` or the assembled model's default source. A source used by an
-attribute, a model, a cache, or an index can be declared in any of the files.
+attribute, a model, or an index can be declared in any of the files.
 An index without `source` uses the common effective source of its attributes
 under the existing index rules.
 

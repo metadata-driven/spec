@@ -422,19 +422,10 @@ instance value empty. The collection has its own presentation through
 
 ### Identifiers
 
-A model declaring `set` has an implicit `id` attribute with an unsigned 64-bit
-value unless it explicitly declares another identifier:
-
-```yaml
-attrs:
-  - name: id
-    title: Host ID
-    type: string(64)
-```
-
-An explicit `id` replaces the implicit identifier. Model references use the
-identifier type of their target model, so a reference is not assumed to be a
-`uint64` when the target has a string identifier.
+The parser adds an unsigned 64-bit `id` attribute to every model that declares
+`set`. Models without a set have no identifier attribute. The name `id` is
+reserved in model attribute declarations. Model references, indexes, queries,
+and templates can use the generated attribute.
 
 ## Attributes
 
@@ -557,7 +548,7 @@ enum uses its path, for example `set<user.type>`.
 
 | Type | Meaning |
 | --- | --- |
-| `id` | Default unsigned 64-bit identifier. |
+| `id` | Unsigned 64-bit identifier. |
 | `bool` | Boolean value. |
 | `int` | Signed integer. |
 | `number` | Exact numeric value with provider defaults. |
@@ -655,7 +646,7 @@ A model name is also its reference type:
 ```
 
 The runtime exposes a `user` reference. A storage adapter persists the target
-model's identifier and resolves it through model metadata.
+model's generated identifier and resolves it through model metadata.
 
 ### Materialized collections
 
@@ -749,15 +740,12 @@ For an inline enum, the effective ID is an unsigned 64-bit integer. Different
 enums may reuse the same IDs. A readable enum assignment is resolved by `name`,
 while a storage adapter persists the effective ID.
 
-For a predefined model item, the effective ID must match the identifier type of
-the owning model and supplies the model element's identifier value. Because a
-derived ID is numeric, a model with an incompatible identifier type must use an
-explicit ID; no implicit numeric-to-string conversion is performed. The
-effective ID must be unique in the model's canonical set, not merely among the
-items present in this document. The parser can detect collisions between
-declared items; a source adapter must also reject a conflicting existing row
-during bootstrap. Normalized item metadata exposes the effective ID even when
-the raw YAML omitted the `id` key.
+For a predefined item of a set-backed model, the effective ID is an unsigned
+64-bit integer that supplies the element's generated `id` attribute. The
+effective ID must be unique across the model's canonical set. The parser can
+detect collisions between declared items. The source adapter must also reject
+a conflicting existing row during bootstrap. Normalized item metadata exposes
+the effective ID even when the raw YAML omitted the `id` key.
 
 ## Inline enums
 
@@ -1008,12 +996,13 @@ A conforming parser or compiler should:
 
 1. Preserve the order of every declared sequence.
 2. Require unique names inside each scope.
-3. Add an implicit `id` when a set-backed model does not declare one.
-4. Derive a missing item ID from its one-based sequence position; validate the
-   uniqueness and type compatibility of every effective ID.
+3. Reject an explicit `id` in model `attrs` and add the generated `id`
+   attribute of type `id` to every model declaring `set`.
+4. Derive a missing item ID from its one-based sequence position and validate
+   the uniqueness and type of every effective ID.
 5. Resolve all domain, source, model, enum, attribute, index, and model-set-name
    references without creating set metadata nodes.
-6. Resolve reference storage through the target model's identifier type.
+6. Resolve model reference storage through the target model's generated identifier.
 7. Normalize `enum` and `enum[]` to model-local enum type paths.
 8. Permit enum `items` only on `enum` and `enum[]` declarations.
 9. Normalize the attribute's `index` shorthand to explicit index metadata.
