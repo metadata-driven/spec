@@ -22,6 +22,25 @@ domains:
     description: Game domain
     icon: 🎮
 
+enums:
+  - name: currency
+    title: Currencies
+    items:
+      - name: usd
+        title: USD
+        description: United States dollar
+        icon: '$'
+
+      - name: eur
+        title: EUR
+        description: Euro
+        icon: '€'
+
+      - name: gbp
+        title: GBP
+        description: Pound sterling
+        icon: '£'
+
 models:
   - name: user
     title: Player account
@@ -39,6 +58,22 @@ models:
 
     domains: [shop, game, website]
     source: maindb
+
+    enums:
+      - name: type
+        title: Account types
+        items:
+          - name: admin
+            title: Administrator
+            icon: 🤠
+
+          - name: user
+            title: User
+            icon: 👤
+
+          - name: guest
+            title: Guest
+            icon: 👻
 
     attrs:
       - name: created
@@ -130,20 +165,8 @@ models:
 
       - name: type
         title: User type
-        type: enum
+        type: user.type
         index: regular
-        items:
-          - name: admin
-            title: Administrator
-            icon: 🤠
-
-          - name: user
-            title: User
-            icon: 👤
-
-          - name: guest
-            title: Guest
-            icon: 👻
 
       - name: previous_type
         title: Previous user type
@@ -301,22 +324,7 @@ models:
 
       - name: currency
         title: Currency
-        type: enum
-        items:
-          - name: usd
-            title: USD
-            description: United States dollar
-            icon: '$'
-
-          - name: eur
-            title: EUR
-            description: Euro
-            icon: '€'
-
-          - name: gbp
-            title: GBP
-            description: Pound sterling
-            icon: '£'
+        type: currency
 
       - name: amount
         title: 'Enter amount in {currency.title}'

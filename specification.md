@@ -18,8 +18,9 @@ platform with an online store. See [`examples/canonical.yaml`](examples/canonica
 
 ## Design principles
 
-- Metadata is model-centered. Attributes, inline enums, indexes, and
-  predefined items stay with their owning model.
+- Metadata is model-centered. Attributes, indexes, and predefined items
+  stay with their owning model. Enums may be declared at the root, within a
+  model, or inline on an attribute.
 - Logical models are independent from physical storage. One logical model may
   be assembled from attributes stored in several sources.
 - A model describes one element. Its `set` property names the queryable
@@ -39,6 +40,7 @@ project:
   name: mega_game
 
 domains: []
+enums: []
 models: []
 sources: []
 ```
@@ -48,11 +50,12 @@ sources: []
 | `version` | Optional version of the metadata format. |
 | `project` | Metadata for the application or configuration document. |
 | `domains` | Optional logical classifications referenced by models and attributes. |
+| `enums` | Ordered root enum declarations. |
 | `models` | Ordered model declarations; this section exists only at the document root. |
 | `sources` | Storage, search, file, API, composite, or other data backends. |
 
 The order of top-level mapping keys has no meaning. The order of models,
-attributes, enum values, indexes, and predefined items is preserved and
+attributes, enums, enum values, indexes, and predefined items is preserved and
 may be used by editors and generators. For an item without an explicit `id`,
 this order also determines its effective ID.
 
@@ -165,7 +168,8 @@ Canonical logical paths include:
 | Model set name (not a path) | `users`                 |
 | Attribute                   | `user.login`, `user.type` |
 | Attribute group             | `user.groups.general`   |
-| Inline enum type            | `user.type`             |
+| Root enum type              | `status`                |
+| Model-scoped enum type      | `user.type`             |
 | Enum item                   | `user.type.admin`       |
 | Predefined model item       | `user.super_admin`      |
 | Named index                 | `user.indexes.location` |
@@ -354,6 +358,7 @@ models:
     set_icon: 👥
 
     attrs: []
+    enums: []
     indexes: []
     items: []
 ```
@@ -373,6 +378,7 @@ models:
 | `set_description` | Set description. |
 | `set_icon` | Set icon. |
 | `attrs` | Ordered attribute declarations. |
+| `enums` | Ordered enum declarations scoped to this model. |
 | `indexes` | Ordered compound or external index declarations. |
 | `items` | Ordered predefined, read-only elements. |
 
@@ -736,7 +742,7 @@ item's data identity and may require a migration. Items whose order may change,
 or whose IDs have already been persisted, should therefore declare `id`
 explicitly.
 
-For an inline enum, the effective ID is an unsigned 64-bit integer. Different
+For an enum, the effective ID is an unsigned 64-bit integer. Different
 enums may reuse the same IDs. A readable enum assignment is resolved by `name`,
 while a storage adapter persists the effective ID.
 
@@ -747,22 +753,73 @@ detect collisions between declared items. The source adapter must also reject
 a conflicting existing row during bootstrap. Normalized item metadata exposes
 the effective ID even when the raw YAML omitted the `id` key.
 
-## Inline enums
+## Enumerations
 
-An enum is declared directly on the attribute that normally stores it. The
-parser creates separate attribute and enum type nodes under the model. They
-share a logical path, and the attribute's value type points to the enum node.
-The enum node owns the `items` and has predefined string attributes `name`,
-`title`, `description`, and `icon`. The enum and its items use the memory
-source. Presentation fields on the inline declaration describe the field,
-and the enum uses its name as its default title.
+An enumeration defines an ordered set of values. The parser represents each
+root, model, or inline declaration as a `KindEnum` node. The enum node owns its
+`items` and has predefined string attributes `name`, `title`, `description`,
+and `icon`. The enum and its read-only items use the memory source.
 
-In Go, `LookupAttr("user.type")` returns the attribute. Both
-`LookupType("user.type")` and `LookupEnum("user.type")` return the enum
-definition. `LookupModel("user")` returns the model definition. The generic
-`Lookup("user.type")` resolves to the enum definition at the shared path.
+### Named enums
 
-### Scalar enum
+The root `enums` sequence defines types such as `status`. A model's `enums`
+sequence defines types such as `user.type`. Append the item name to the type
+path to address a value, for example `status.done` or `user.type.admin`.
+References to a model-scoped enum use the qualified path, including from
+attributes of the owning model.
+
+```yaml
+enums:
+  - name: status
+    title: Statuses
+    items:
+      - name: created
+      - name: done
+      - name: canceled
+
+models:
+  - name: user
+    enums:
+      - name: type
+        title: Account types
+        items:
+          - name: admin
+            title: Administrator
+
+    attrs:
+      - name: type
+        title: Current account type
+        type: user.type
+
+      - name: status
+        type: status
+```
+
+A named enum requires a `name` and accepts its own common metadata fields.
+Its optional `items` sequence follows the [item identity rules](#item-identity).
+The name is a single type path segment. It starts with a lowercase ASCII
+letter and may contain lowercase ASCII letters, digits, and underscores.
+Singular names are conventional. Root enum names must be distinct from model
+names, model set names, primitive names, and the reserved token `enum`.
+
+The parser collects all enum definitions before resolving attribute types.
+Within a model, named and inline declarations share the type namespace. Two
+such declarations of `user.type` are an error. Attributes have their own
+namespace, so the named enum and the attribute `user.type` can coexist.
+
+In Go, `LookupType("user.type")` and `LookupEnum("user.type")` return the enum
+definition. `LookupAttr("user.type")` returns the field. The generic
+`Lookup("user.type")` resolves to the enum at this shared path.
+
+### Inline enums
+
+An attribute declared with `type: enum` or `type: enum[]` creates a separate
+model-scoped enum node at the attribute's path. Presentation fields on the
+inline declaration describe the field, and the enum uses its name as its
+default title. Moving the same `items` sequence to a named declaration inside
+the same model preserves the enum path, item paths, and effective IDs.
+
+#### Scalar enum
 
 ```yaml
 - name: type
@@ -785,7 +842,7 @@ definition. `LookupModel("user")` returns the model definition. The generic
 This declaration creates the enum type `user.type` and items such as
 `user.type.admin`.
 
-### Enum collection
+#### Enum collection
 
 ```yaml
 - name: permissions
@@ -804,9 +861,12 @@ The declared enum type is `user.permissions`; the attribute value type is
 
 ### Enum reuse
 
-Another attribute can reuse an enum without repeating `items`:
+An attribute can use a root or model-scoped enum by its type path:
 
 ```yaml
+- name: status
+  type: status
+
 - name: previous_type
   type: user.type
 
@@ -814,13 +874,9 @@ Another attribute can reuse an enum without repeating `items`:
   type: user.permissions[]
 ```
 
-`items` is allowed only when the base type is the declaration token `enum`, so
-it is valid with `enum` and `enum[]` but invalid with `user.type` or
-`user.permissions[]`.
-
-Enum items are exposed as read-only elements through a memory-backed runtime
-provider. This does not create a set metadata node. Editors may still use the
-same lookup infrastructure for enum values and ordinary model references.
+On an attribute, `items` belongs to the inline declaration forms `enum` and
+`enum[]`. An attribute that references an existing enum uses the values from
+that enum definition.
 
 ## Lookups and queries
 
@@ -1016,11 +1072,12 @@ A conforming parser or compiler should:
 6. Resolve model reference storage through the target model's generated identifier.
 7. Normalize `enum` and `enum[]` to attributes that reference separate
    model-local enum type nodes.
-8. Permit enum `items` only on `enum` and `enum[]` declarations.
+8. Read enum `items` from a named `enums` entry or an inline `enum` or
+   `enum[]` attribute declaration.
 9. Normalize the attribute's `index` shorthand to explicit index metadata.
 10. Resolve source inheritance and each attribute's effective domains.
 11. Validate an attribute format's syntax and compatibility with its value type.
-12. Validate predefined values against model attributes and inline enums.
+12. Validate predefined values against model attributes and enum types.
 13. Preserve presentation expressions as strings without interpreting or
     validating the template language in metadata.
 14. Permit `unit` only on attributes.
@@ -1054,8 +1111,7 @@ items:
     id: 1             # optional, keeps the ID stable when items are reordered
 ```
 
-Separate global enum catalogs, object-valued `set` declarations, and additional
-cardinality flags are not part of the format.
+The format uses a scalar `set` name and expresses cardinality through `type`.
 
 ## Implementation scope
 

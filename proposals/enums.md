@@ -1,6 +1,6 @@
 # Proposal for named and inline enumerations
 
-**Status — Draft for future consideration**
+**Status — Accepted for enum declarations.** See the [specification](../specification.md#enumerations).
 
 An enumeration defines an ordered set of values that any compatible attribute
 can use. A document can declare an enumeration at the root, within a model,
@@ -89,12 +89,12 @@ validation error. The parser collects type declarations before resolving
 references. An attribute reuses an existing enumeration by referencing its
 name in `type`.
 
-The Go metadata API could expose the distinction with typed lookups:
+The Go metadata API exposes the distinction with typed lookups:
 
 | Lookup | Result |
 | --- | --- |
-| `Meta.Type("user.type")` | The enum definition with its own presentation and `items`. |
-| `Meta.Attr("user.type")` | The attribute definition with `user.type` as its resolved value type. |
+| `Meta.LookupType("user.type")` | The enum definition with its own presentation and `items`. |
+| `Meta.LookupAttr("user.type")` | The attribute definition with `user.type` as its resolved value type. |
 
 An editor or other caller addressing either kind of node can use the namespace
 along with the path. The Go model generator works from the normalized type and
