@@ -163,7 +163,7 @@ Canonical logical paths include:
 |-----------------------------|-------------------------|
 | Model                       | `user`                  |
 | Model set name (not a path) | `users`                 |
-| Attribute                   | `user.login`            |
+| Attribute                   | `user.login`, `user.type` |
 | Attribute group             | `user.groups.general`   |
 | Inline enum type            | `user.type`             |
 | Enum item                   | `user.type.admin`       |
@@ -515,7 +515,7 @@ The authoring format normally omits `kind`. The parser infers it:
 | Type or structure | Normalized kind |
 | --- | --- |
 | Scalar, reference, or `T[]` | `KindAttr` |
-| `enum` or `enum[]` with `items` | `KindEnum` |
+| `enum` or `enum[]` declaration | `KindAttr` for the field and `KindEnum` for its type |
 | `set<T>` | `KindSet` |
 
 ## Type expressions
@@ -749,7 +749,18 @@ the effective ID even when the raw YAML omitted the `id` key.
 
 ## Inline enums
 
-An enum is declared directly on the attribute that normally stores it.
+An enum is declared directly on the attribute that normally stores it. The
+parser creates separate attribute and enum type nodes under the model. They
+share a logical path, and the attribute's value type points to the enum node.
+The enum node owns the `items` and has predefined string attributes `name`,
+`title`, `description`, and `icon`. The enum and its items use the memory
+source. Presentation fields on the inline declaration describe the field,
+and the enum uses its name as its default title.
+
+In Go, `LookupAttr("user.type")` returns the attribute. Both
+`LookupType("user.type")` and `LookupEnum("user.type")` return the enum
+definition. `LookupModel("user")` returns the model definition. The generic
+`Lookup("user.type")` resolves to the enum definition at the shared path.
 
 ### Scalar enum
 
@@ -1003,7 +1014,8 @@ A conforming parser or compiler should:
 5. Resolve all domain, source, model, enum, attribute, index, and model-set-name
    references without creating set metadata nodes.
 6. Resolve model reference storage through the target model's generated identifier.
-7. Normalize `enum` and `enum[]` to model-local enum type paths.
+7. Normalize `enum` and `enum[]` to attributes that reference separate
+   model-local enum type nodes.
 8. Permit enum `items` only on `enum` and `enum[]` declarations.
 9. Normalize the attribute's `index` shorthand to explicit index metadata.
 10. Resolve source inheritance and each attribute's effective domains.
