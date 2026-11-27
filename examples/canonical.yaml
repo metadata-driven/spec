@@ -1,10 +1,8 @@
 version: 1.0
-
-project:
-  name: mega_game
-  title: Mega Game
-  description: Mega Game sample application with multiplayer game servers and an online store
-  icon: 🕹️
+name: mega_game
+title: Mega Game
+description: Mega Game sample application with multiplayer game servers and an online store
+icon: 🕹️
 
 domains:
   - name: website

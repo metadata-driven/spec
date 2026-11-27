@@ -10,8 +10,9 @@ declaration moves to a different file.
 
 ## File layout
 
-The entry document declares `project` and an optional ordered `include` list
-of local YAML file paths. Paths are relative to the entry document's directory.
+The entry document declares application metadata at its root and can declare an
+ordered `include` list of local YAML file paths. Paths are relative to the entry
+document's directory.
 The entry document can also declare `domains`, `sources`, and `models`. Each
 included file can contain any of these three sections. A project can, for
 example, keep shared connections in `sources.yaml` and business declarations
@@ -28,9 +29,8 @@ Duplicate names within one file are still declaration errors.
 `project.yaml`
 
 ```yaml
-project:
-  name: mega_game
-  title: Mega Game
+name: mega_game
+title: Mega Game
 
 include:
   - billing.yaml

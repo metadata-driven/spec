@@ -23,11 +23,10 @@ player account has a login and a display name. The `invited_by` field references
 the player who sent the invitation, and `friends` stores a list of players.
 
 ```yaml
-project:
-  name: mega_game
-  title: Mega Game
-  description: Mega Game sample application with multiplayer game servers and an online store
-  icon: 🕹️
+name: mega_game
+title: Mega Game
+description: Mega Game sample application with multiplayer game servers and an online store
+icon: 🕹️
 
 models:
   - name: user
